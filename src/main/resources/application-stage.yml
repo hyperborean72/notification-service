@@ -1,0 +1,27 @@
+spring:
+  profiles: stage
+  rabbitmq:
+    host: 172.16.0.210
+  datasource:
+    url: jdbc:postgresql://172.16.0.148:5432/sys101
+    username: sys101
+    password: sys101pass
+  liquibase:
+    enabled: true
+
+app:
+  ribbon_server_host: 172.16.0.143
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://172.16.0.143:8761/eureka,http://172.16.0.58:8761/eureka,http://172.16.0.70:8761/eureka
+
+keycloak:
+  auth-server-url: http://172.16.0.210:8180/auth
+  realm: sys101-testpool
+  credentials.secret: c3d41433-d0ea-40b9-8e11-8d68b6e9b63b
+
+swagger:
+  auth:
+    client-secret: 3b7f0af8-31eb-4a0e-8cf2-b132cc03345d

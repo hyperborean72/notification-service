@@ -1,0 +1,27 @@
+spring:
+  profiles: dev-eureka-main
+  rabbitmq:
+    host: 172.16.0.154
+  datasource:
+    url: jdbc:postgresql://172.16.0.102:5432/sys101
+    username: postgres
+    password: masterkey
+  liquibase:
+    enabled: true
+
+app:
+  ribbon_server_host: 172.16.0.149
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://172.16.0.149:8761/eureka
+
+keycloak:
+  auth-server-url: http://172.16.0.157:8180/auth
+  realm: sys101-dev-eureka-main
+  credentials.secret: a89ab510-7713-4ae6-888b-7dfd4044a1e0
+
+swagger:
+  auth:
+    client-secret: 18271635-f198-41f5-a051-c6db572db4fb

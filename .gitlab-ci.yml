@@ -1,0 +1,75 @@
+image: reg.c-i-systems.com/sys101/sys101_docker_image:latest
+
+cache:
+  paths:
+    - .m2/repository
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MICROSERVICE_NAME: " в сервисе Notifications"
+  ADDITIONAL_INF: " Ветка: $CI_COMMIT_BRANCH. Разработчик: $GITLAB_USER_NAME"
+
+stages:
+- build
+- package
+- deploy
+
+build:
+  stage: build
+  script:
+    - echo "Ошибка сборки CI/CD $MICROSERVICE_NAME. $ADDITIONAL_INF" > error_txt.txt 
+    - mvn -s $MAVEN_SETTINGS_XML compile test
+    - echo "Этап $CI_JOB_STAGE для $CI_JOB_NAME $MICROSERVICE_NAME выполнен. $ADDITIONAL_INF" > error_txt.txt
+  after_script:
+    - curl -s -X POST https://api.telegram.org/bot${BOT}/sendMessage -d chat_id=$CHAT_ID_DEV -d text=" $(cat error_txt.txt) " > /dev/null
+
+package:
+  stage: package
+  script:
+    - mvn -DskipTests=true -s $MAVEN_SETTINGS_XML package
+  artifacts:
+    paths:
+      - "target/*.jar"
+
+deploy-dev:
+  stage: deploy
+  before_script:
+    - echo "Ошибка deploy dev $MICROSERVICE_NAME. $ADDITIONAL_INF" > error_txt.txt
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - ssh-keyscan -H $SSH_HOST_DEV >> ~/.ssh/known_hosts
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    # получаем имя файла для загрузки по scp
+    - cd target/ && FILE_FROM_DEPLOY="$(ls -t | head -1)"
+  script:
+    - ssh $SSH_USERNAME@$SSH_HOST_DEV "cd /sys101/sys101_notifications/ && rm -f $FILE_FROM_DEPLOY && exit"
+    - scp $FILE_FROM_DEPLOY $SSH_USERNAME@$SSH_HOST_DEV:/sys101/sys101_notifications/
+    - ssh $SSH_USERNAME@$SSH_HOST_DEV "systemctl restart sys101_notifications"
+    - cd .. && echo "Этап $CI_JOB_STAGE для $CI_JOB_NAME $MICROSERVICE_NAME выполнен. $ADDITIONAL_INF" > error_txt.txt
+  only:
+    - stepanovam
+  after_script:
+    - curl -s -X POST https://api.telegram.org/bot${BOT}/sendMessage -d chat_id=$CHAT_ID_DEV -d text=" $(cat error_txt.txt) " > /dev/null
+
+deploy-stage:
+ stage: deploy
+ before_script:
+   - echo "Ошибка deploy stage $MICROSERVICE_NAME. $ADDITIONAL_INF" > error_txt.txt
+   - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+   - eval $(ssh-agent -s)
+   - mkdir -p ~/.ssh
+   - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+   - ssh-keyscan -H 172.16.0.210 >> ~/.ssh/known_hosts
+   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+   # получаем имя файла для загрузки по scp 
+   - cd target/ && FILE_FROM_DEPLOY="$(ls -t | head -1)"
+ script:
+   - scp $FILE_FROM_DEPLOY $SSH_USERNAME@$SSH_HOST_STAGE:/data/sys101/notifications
+   - ssh $SSH_USERNAME@$SSH_HOST_STAGE "systemctl restart sys101_notifications"
+   - cd .. && echo "Этап $CI_JOB_STAGE для $CI_JOB_NAME $MICROSERVICE_NAME выполнен. $ADDITIONAL_INF" > error_txt.txt
+ only:
+   - stepanovam
+ after_script:
+   - curl -s -X POST https://api.telegram.org/bot${BOT}/sendMessage -d chat_id=$CHAT_ID_TEST -d text=" $(cat error_txt.txt) " > /dev/null

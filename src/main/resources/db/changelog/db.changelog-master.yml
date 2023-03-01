@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - includeAll:
+      #file: db/changelog/1.0/2021-10-21_stepanovam_create_notification_table.sql
+      path: db/changelog/1.0/

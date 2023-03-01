@@ -1,0 +1,193 @@
+app:
+  notification_exchange: notificationExchange
+  event_exchanges:
+    incidents: incidentEvents
+    objects: objectEvents
+  department_exchange: forces.department
+  department_queue: notifications.department
+  recipients:
+    COMBAT_DEPARTURE_REGISTERED:
+      - grave.operational_support_service
+      - grave.local_garrison_commander
+      - grave.central_fire_station
+      - grave.agent
+      - grave.head_of_unit
+      - grave.head_of_guard
+      - critical.fire_station
+    COMBAT_DEPARTURE_STATUS_CHANGE:
+      - standard.operational_support_service
+      - standard.local_garrison_commander
+      - standard.central_fire_station
+      - standard.agent
+      - standard.head_of_unit
+      - standard.head_of_guard
+      - standard.fire_station
+    DEATH_TOLL_CHANGE:
+      - standard.operational_support_service
+      - standard.local_garrison_commander
+      - standard.central_fire_station
+      - standard.agent
+      - standard.head_of_unit
+      - standard.head_of_guard
+      - standard.fire_station
+    FIRE_RANK_CHANGE:
+      - standard.operational_support_service
+      - standard.local_garrison_commander
+      - standard.central_fire_station
+      - standard.agent
+      - standard.head_of_unit
+      - standard.head_of_guard
+      - standard.fire_station
+    GARRISONS_TOOK_OVER:
+      - grave.agent
+      - grave.local_garrison_commander
+      - grave.regional_garrison_commander
+      - grave.operational_support_service
+    GUARD_ON_DUTY_CHANGE:
+      - critical.central_fire_station
+      - grave.agent
+      - grave.regional_garrison_commander
+      - grave.operational_support_service
+      - standard.fire_station
+    LACK_OF_REPORT:
+      - standard.fire_station
+    NON_COMBAT_DEPARTURE_REGISTERED:
+      - standard.head_of_unit
+      - standard.head_of_guard
+      - standard.central_fire_station
+    REQUEST_FOR_FORCES:
+      - critical.fire_station
+    REQUEST_FOR_FORCES_CONFIRMED:
+      - standard.central_fire_station
+    REQUEST_FOR_FORCES_DECLINED:
+      - critical.central_fire_station
+    STATUS_GUARD_ON_DUTY:
+      - grave.central_fire_station
+    STUDY_DEPARTURE_REGISTERED:
+      - standard.head_of_unit
+      - standard.head_of_guard
+      - standard.central_fire_station
+    OBJECT_STATUS_CHANGE:
+      - standard.head_of_unit
+    GUARD_ON_DUTY_STATUS_CONFIRMED:
+      - standard.fire_station
+    CALL_REGISTERED:
+      - critical.central_fire_station
+  ribbon_server_port: 4000
+  ribbon_server_proto: http
+  templates:
+    COMBAT_DEPARTURE_REGISTERED:
+      - "{4}.Новый боевой выезд {0} по адресу {1} от {2} в подразделении {3}"
+    COMBAT_DEPARTURE_STATUS_CHANGE: "{5}.Изменен статус боевого выезда {0} по адресу {1} от {2}, зарегистрированного в подразделении {3}. Новый статус {4}"
+    DEATH_TOLL_CHANGE: "{5}.Увеличение количества погибших до {0} для боевого выезда {1} по адресу {2} от {3}, зарегистрированного в подразделении {4}"
+    FIRE_RANK_CHANGE: "{5}.Изменение ранга пожара до {0} для боевого выезда {1} по адресу {2} от {3}, зарегистрированного в подразделении {4}"
+    GARRISONS_TOOK_OVER: "{2}.Сформирована строевая записка гарнизона {0}{1}"
+    GUARD_ON_DUTY_CHANGE:
+    # критическое
+      - "{2}.Необходимо подтвердить изменения состава дежурного караула {0} в Строевой записке от {1}"
+    # важное
+      - "{2}.Состав дежурного караула {0} в Строевой записке {1} ИЗМЕНЕН"
+    # стандартное
+      - "{0}.Изменен состав дежурного караула"
+    LACK_OF_REPORT: "{2}.Нет актуального доклада в течение 10 минут по боевому выезду {0} по адресу {1}"
+    NON_COMBAT_DEPARTURE_REGISTERED: "{4}.Новый небоевой выезд {0} от {1}. {2}. Ответственный за небоевой выезд {3}"
+    REQUEST_FOR_FORCES: "{2}.Запрос на высылку доп. СиС на боевой выезд {0} по адресу {1}"
+    REQUEST_FOR_FORCES_CONFIRMED: "{4}.Запрос на высылку сил и средств ИСПОЛНЕН.  От {0},  Дата и время {1}, Выезд {2}, По адресу {3}"
+    REQUEST_FOR_FORCES_DECLINED: "{3}.Запрос на высылку сил и средств ОТКЛОНЕН.  От {0}  Выезд № {1}  по адресу {2}"
+    STATUS_GUARD_ON_DUTY: "{2}.Караул в подразделении {0} ЗАСТУПИЛ  в {1}"
+    STUDY_DEPARTURE_REGISTERED: "{4}.Новый учебный выезд {0} от {1}. {2}. Ответственный за учебный  выезд {3}"
+    GUARD_ON_DUTY_STATUS_CONFIRMED: "{3}.Дежурный караул подразделения {0} ({1}) подтвержден диспетчером ЦППС ({2})"
+    OBJECT_STATUS_CHANGE: "{2}. Статус пожароопасного объекта {0} изменен на {1}"
+    CALL_REGISTERED: "{4}. Новый вызов {0} по адресу {1} от {2} зарегистрирован радиотелефонистом подразделения {3}"
+
+
+spring:
+  rabbitmq:
+    port: 5672
+    username: sys101
+    password: sys101pass
+  main:
+    banner-mode: "off"
+  application:
+    name: NOTIFICATIONS_SERVICE
+  datasource:
+    initialization-mode: always
+  jpa:
+    hibernate.ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    generate-ddl: true
+    properties:
+      hibernate:
+        show_sql: false
+        connection:
+          autocommit: false
+        default_schema: sys101_notifications
+        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+        temp:
+          use_jdbc_metadata_defaults: false
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yml
+    default_schema: sys101_notifications
+    database-change-log-lock-table: databasechangeloglock_notifications
+    database-change-log-table: databasechangelog_notifications
+    liquibase-schema: sys101_lqb
+
+keycloak:
+  cors: true
+  ssl-required: external
+  resource: SYS101_NOTIFICATION_SERVICE
+  bearer-only: true
+  securityConstraints[0]:
+    authRoles[0]: user
+    securityCollections[0]:
+      patterns[0]: /api/notifications/*
+
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${spring.application.name}:${server.port}
+    preferIpAddress: true
+    metadata-map:
+      env: ${spring.profiles.active}
+
+swagger:
+  auth:
+    auth-url: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/auth
+    token-url: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
+    client-id: SYS101_NOTIFICATION_SWAGGER
+
+server:
+  port: 15001
+  servlet:
+     context-path: /
+
+logging:
+  file: /var/log/sys101_notifications.log
+  level:
+    root: "info"
+    liquibase: "info"
+
+management:
+  endpoint:
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+
+info:
+  project:
+    artifactId: sys101_notifications
+    version: 1.0
+
+feign:
+  hystrix:
+    enabled: true
+
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false
