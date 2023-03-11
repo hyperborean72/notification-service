@@ -90,31 +90,6 @@ Notification service implemented for [XYZ] in 2022. Accepts other services' even
 	var socket = new SockJS('/notificationWebsocket');
 	stompClient = Stomp.over(socket);
 
-
-Получатели уведомлений идентифицируются сервисом согласно следующей схеме:
-Диспетчер ПЧ	fire_station	Диспетчер ПЧ
-Начальник караула	head_of_guard	Начальник караула
-Начальник части	head_of_unit	Начальник части
-		
-Начальник МПСГ	local_garrison_commander	Начальник гарнизона (МПСГ)
-		
-Диспетчер ЦППС	central_fire_station	Диспетчер ЦППС
-Диспетчер СООДС	operational_support_service	Диспетчер СОО(ДС)
-Исполнитель СПТ	agent	Исполнитель СПТ и ПАСР
-Начальник ТПСГ	regional_garrison_commander	Начальник гарнизона  (ТПСГ)
-
-Чтение уведомлений реализуется подключением к точкам доступа:
-Диспетчер ПЧ	/queue/{uuid части}.fire_station
-Начальник караула	/queue/{uuid части}.head_of_guard
-Начальник части	/queue/{uuid части}.head_of_unit
-	
-Начальник МПСГ	/queue/{uuid гарнизона}.local_garrison_commander
-Диспетчер ЦППС	/queue/{uuid гарнизона}.central_fire_station
-	
-Диспетчер СООДС	/queue/operational_support_service
-Исполнитель СПТ	/queue/agent
-Начальник ТПСГ	/queue/regional_garrison_commander
-
 Примеры подключения для чтения уведомлений:
 stompClient.subscribe('/queue/operational_support_service', onMessageReceived);
 stompClient.subscribe('/queue/274b7f42-e400-4cd0-992f-3d68c059bf2f.fire_station', onMessageReceived)
@@ -122,16 +97,17 @@ stompClient.subscribe('/queue/274b7f42-e400-4cd0-992f-3d68c059bf2f.fire_station'
 
 Подтверждение обработки критического уведомления реализуется подключением к точке /app/notificationProcessed, 
 как в примере из файла socket.js:
+```
 	stompClient.send("/app/notificationProcessed", {}, JSON.stringify({
 		id : ''9ee5a41e-21b1-4e29-96d3-db0d9b98bc99",
 		userId: 'ae80d1e8-b348-436e-ad13-058c49e2bfe6',
         	result: 'Исполнено'
 	}))
-	
+``	
 Ответ на критическое уведомление должен содержать следующие поля:
-	id 	- порядковый номер (uuid) уведомления
-	userId 	- порядковый номер (uuid) пользователя системы, принявшего уведомление
-	result	- действие, предпринятое в ответ на уведомление
+- id 	- порядковый номер (uuid) уведомления
+- userId 	- порядковый номер (uuid) пользователя системы, принявшего уведомление
+- result	- действие, предпринятое в ответ на уведомление
 
 
 Порядковый номер (uuid) уведомления "зашит" в уведомление и представляет собой его первые 36 символов.
