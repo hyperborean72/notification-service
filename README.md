@@ -53,7 +53,8 @@ Notification service implemented for [XYZ] in 2022. Accepts other services' even
 
 
 Пример события, в ответ на которое будет сформирован ряд уведомлений с соответствующим приоритетом
-```{
+```
+{
 	"senderName": "incidents", 
 	"unitShortName": "ПЧ-108",
 	"eventType": "COMBAT_DEPARTURE_REGISTERED",
@@ -103,7 +104,7 @@ stompClient.subscribe('/queue/274b7f42-e400-4cd0-992f-3d68c059bf2f.fire_station'
 		userId: 'ae80d1e8-b348-436e-ad13-058c49e2bfe6',
         	result: 'Исполнено'
 	}))
-``	
+```	
 Ответ на критическое уведомление должен содержать следующие поля:
 - id 	- порядковый номер (uuid) уведомления
 - userId 	- порядковый номер (uuid) пользователя системы, принявшего уведомление
