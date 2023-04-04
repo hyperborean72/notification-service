@@ -8,7 +8,7 @@ The notification service is a middleware:
 - listening for event messages from the RabbitMQ queues
  - writing to the database on the event occurrence 
   - generating notifications in response to event messages (or a series of notifications according to priorities)
-   - sending notifications to recipients according to their role
+   - sending individual notifications to recipients authenticated with Keycloak and connected via websocket
    - registering  result of the critical notification processing into the database
 ***********************************************************************************************
 
